@@ -620,7 +620,9 @@ If you want to test that a specific error gets thrown, use `.toThrowError`.
 ### `.toThrowError(error)`
 
 Use `.toThrowError` to test that a function throws a specific error when it
-is called. The argument can be a string for the error message, a class for the error, or a regex that should match the error. For example, let's say you have a `drinkFlavor` function that throws whenever the flavor is `'octopus'`, and is coded like this:
+is called. The argument can be a string for the error message, a class for the error, or a regex that should match the error.
+Along the argument you can pass a callback that receives the thrown error for extra asserting.
+For example, let's say you have a `drinkFlavor` function that throws whenever the flavor is `'octopus'`, and is coded like this:
 
 ```js
 function drinkFlavor(flavor) {
@@ -647,6 +649,11 @@ describe('drinking flavors', () => {
 
     // Test that we get a DisgustingFlavorError
     expect(drinkOctopus).toThrowError(DisgustingFlavorError);
+
+    // Making extra asserts
+    expect(drinkOctopus).toThrowError('yuck, octopus flavor', e => {
+      expect(e).toBeInstanceOf(DisgustingFlavorError);
+    });
   });
 });
 ```

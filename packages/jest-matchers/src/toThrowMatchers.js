@@ -29,7 +29,7 @@ const {
 const equals = global.jasmine.matchersUtil.equals;
 
 const createMatcher = matcherName =>
-  (actual: Function, expected: string | Error | RegExp) => {
+  (actual: Function, expected: string | Error | RegExp, callback: ?Function) => {
     const value = expected;
     let error;
 
@@ -44,11 +44,11 @@ const createMatcher = matcherName =>
     }
 
     if (typeof expected === 'function') {
-      return toThrowMatchingError(matcherName, error, expected);
+      return toThrowMatchingError(matcherName, error, expected, callback);
     } else if (expected instanceof RegExp) {
-      return toThrowMatchingStringOrRegexp(matcherName, error, expected, value);
+      return toThrowMatchingStringOrRegexp(matcherName, error, expected, value, callback);
     } else if (expected && typeof expected === 'object') {
-      return toThrowMatchingErrorInstance(matcherName, error, expected);
+      return toThrowMatchingErrorInstance(matcherName, error, expected, callback);
     } else if (expected === undefined) {
       const pass = error !== undefined;
       return {
@@ -81,12 +81,18 @@ const toThrowMatchingStringOrRegexp = (
   error: ?Error,
   pattern: RegExp,
   value: RegExp | string | Error,
+  callback: ?Function,
 ) => {
   if (error && !error.message && !error.name) {
     error = new Error(error);
   }
 
   const pass = !!(error && error.message.match(pattern));
+
+  if (pass && callback) {
+    callback(error);
+  }
+
   const message = pass
     ? () => matcherHint('.not' + name, 'function', getType(value)) + '\n\n' +
       `Expected the function not to throw an error matching:\n` +
@@ -104,12 +110,18 @@ const toThrowMatchingErrorInstance = (
   name: string,
   error: ?Error,
   expectedError: Error,
+  callback: ?Function,
 ) => {
   if (error && !error.message && !error.name) {
     error = new Error(error);
   }
 
   const pass = equals(error, expectedError);
+
+  if (pass && callback) {
+    callback(error);
+  }
+
   const message = pass
     ? () => matcherHint('.not' + name, 'function', 'error') + '\n\n' +
       `Expected the function not to throw an error matching:\n` +
@@ -127,8 +139,14 @@ const toThrowMatchingError = (
   name: string,
   error: ?Error,
   ErrorClass: typeof Error,
+  callback: ?Function,
 ) => {
   const pass = !!(error && error instanceof ErrorClass);
+
+  if (pass && callback) {
+    callback(error);
+  }
+
   const message = pass
     ? () => matcherHint('.not' + name, 'function', 'type') + '\n\n' +
       `Expected the function not to throw an error of type:\n` +

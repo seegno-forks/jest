@@ -43,6 +43,10 @@ class Error {
         jestExpect(() => { throw new Error('banana'); })
           .not[toThrow]('apple');
         jestExpect(() => {}).not[toThrow]('apple');
+        jestExpect(() => { throw new Error('apple'); })
+          [toThrow]('apple', e => { expect(e).toBeInstanceOf(Error); });
+        jestExpect(() => { throw new Error('banana'); })
+          .not[toThrow]('apple', e => { expect(e).not.toBeInstanceOf(Error); });
       });
 
       test('did not throw at all', () => {
@@ -68,6 +72,20 @@ class Error {
             .not[toThrow]('apple');
         }).toThrowErrorMatchingSnapshot();
       });
+
+      test('threw, but should not have, and callback did not fail', () => {
+        expect(() => {
+          jestExpect(() => { throw new Error('apple'); })
+            .not[toThrow]('apple', e => { expect(e).toBeInstanceOf(Error); });
+        }).toThrowErrorMatchingSnapshot();
+      });
+
+      test('threw as expected, but callback failed', () => {
+        expect(() => {
+          jestExpect(() => { throw new Error('apple'); })
+            [toThrow]('apple', e => { expect(e).not.toBeInstanceOf(Error); });
+        }).toThrowErrorMatchingSnapshot();
+      });
     });
 
     describe('regexp', () => {
@@ -75,6 +93,10 @@ class Error {
         expect(() => { throw new Error('apple'); })[toThrow](/apple/);
         expect(() => { throw new Error('banana'); }).not[toThrow](/apple/);
         expect(() => {}).not[toThrow](/apple/);
+        expect(() => { throw new Error('apple'); })
+          [toThrow](/apple/, e => { expect(e).toBeInstanceOf(Error); });
+        expect(() => { throw new Error('banana'); })
+          .not[toThrow](/apple/, e => { expect(e).not.toBeInstanceOf(Error); });
       });
 
       test('did not throw at all', () => {
@@ -95,6 +117,20 @@ class Error {
             .not[toThrow](/apple/);
         }).toThrowErrorMatchingSnapshot();
       });
+
+      test('threw, but should not have, and callback did not fail', () => {
+        expect(() => {
+          jestExpect(() => { throw new Error('apple'); })
+            .not[toThrow]('apple', e => { expect(e).toBeInstanceOf(Error); });
+        }).toThrowErrorMatchingSnapshot();
+      });
+
+      test('threw as expected, but callback failed', () => {
+        expect(() => {
+          jestExpect(() => { throw new Error('apple'); })
+            [toThrow](/apple/, e => { expect(e).not.toBeInstanceOf(Error); });
+        }).toThrowErrorMatchingSnapshot();
+      });
     });
 
     describe('errors', () => {
@@ -106,7 +142,28 @@ class Error {
           jestExpect(() => { throw new Err(); })[toThrow](new Error());
           jestExpect(() => { throw new Err(); }).not[toThrow](new Err2());
           jestExpect(() => {}).not[toThrow](new Err());
+          jestExpect(() => { throw new Err(); })
+            [toThrow](new Err(), e => { expect(e).toBeInstanceOf(Err); });
+          jestExpect(() => { throw new Err(); })
+            .not[toThrow](new Err2(), e => {
+              expect(e).not.toBeInstanceOf(Err);
+            });
         });
+      });
+
+      test('threw, but should not have, and callback did not fail', () => {
+        expect(() => {
+          jestExpect(() => { throw new Err(); })
+            .not[toThrow](new Err(), e => { expect(e).toBeInstanceOf(Err); });
+        }).toThrowErrorMatchingSnapshot();
+      });
+
+      test('threw as expected, but callback failed', () => {
+        expect(() => {
+          jestExpect(() => { throw new Err(); })[toThrow](new Err(), e => {
+            expect(e).not.toBeInstanceOf(Err);
+          });
+        }).toThrowErrorMatchingSnapshot();
       });
     });
 
@@ -116,6 +173,12 @@ class Error {
         jestExpect(() => { throw new Err(); })[toThrow](Error);
         jestExpect(() => { throw new Err(); }).not[toThrow](Err2);
         jestExpect(() => {}).not[toThrow](Err);
+        jestExpect(() => { throw new Err(); })[toThrow](Err, e => {
+          expect(e).toBeInstanceOf(Err);
+        });
+        jestExpect(() => { throw new Err(); }).not[toThrow](Err2, e => {
+          expect(e).not.toBeInstanceOf(Err);
+        });
       });
 
       test('did not throw at all', () => {
@@ -134,6 +197,21 @@ class Error {
           jestExpect(() => { throw new Err('apple'); }).not[toThrow](Err);
         }).toThrowErrorMatchingSnapshot();
       });
+
+      test('threw, but should not have, and callback did not fail', () => {
+        expect(() => {
+          jestExpect(() => { throw new Err(); })
+            .not[toThrow](Err, e => { expect(e).toBeInstanceOf(Err); });
+        }).toThrowErrorMatchingSnapshot();
+      });
+
+      test('threw as expected, but callback failed', () => {
+        expect(() => {
+          jestExpect(() => { throw new Err(); })[toThrow](Err, e => {
+            expect(e).not.toBeInstanceOf(Err);
+          });
+        }).toThrowErrorMatchingSnapshot();
+      });
     });
 
     test('invalid arguments', () => {
@@ -141,5 +219,4 @@ class Error {
         .toThrowErrorMatchingSnapshot();
     });
   });
-
 });
